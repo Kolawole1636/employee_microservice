@@ -5,6 +5,7 @@ import com.employee.employeeservice.dto.Department;
 import com.employee.employeeservice.dto.EmployeeDto;
 import com.employee.employeeservice.model.Employee;
 import com.employee.employeeservice.repository.EmployeeRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -75,25 +76,49 @@ public class EmployeeService {
         employee.setMonthlyBalance(eBalance);
 
 
-        return employeeRepository.save(employee);
+        employee = employeeRepository.save(employee);
+
+        String departmentServiceUrl = "http://department-service/";
+
+        String url = departmentServiceUrl + "department/" + employee.getDepartmentId() + "/update";
+        restTemplate.put(url + "?incrementBy=1", null);
+
+        return employee;
 
     }
 
 
-    public String getEmployee(int id) {
 
-        Employee employee = employeeRepository.findById(id).get();
+    @CircuitBreaker(name = "departmentService", fallbackMethod = "fallbackGetDepartment")
+    public String getDepartment(int departmentId) {
+        String url = "http://department-service/department/" + departmentId;
+        Department department= restTemplate.getForObject(url, Department.class);
 
-        String url = "http://department-service/department/" + employee.getDepartmentId();
-
-        Department department = restTemplate.getForObject(url, Department.class);
-
-        String employeeInfo = "Employee's name:"+ employee.getFirstName() + "\n"
-                + "Employee's salary:"+employee.getSalary() + "\n"
-                + "Employee's phone Number:"+employee.getPhoneNumber() + "\n"
-                + "Employee's email:"+employee.getEmail() + "\n"
-                + "Employee's department:"+department.getName() + "\n";
-
-        return employeeInfo;
+        return department.getName();
     }
+
+    public String fallbackGetDepartment(int departmentId, Throwable throwable) {
+        return "Fallback: Department service is unavailable";
+    }
+
+
+
+
+    public void deleteEmployee(int id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Delete the employee
+        employeeRepository.deleteById(id);
+
+        // Update the department's staff count
+        String departmentServiceUrl = "http://department-service/";
+
+        String url = departmentServiceUrl + "department/" + employee.getDepartmentId() + "/update";
+        restTemplate.put(url + "?incrementBy=-1", null);
+    }
+
+
+
+
 }
