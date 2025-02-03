@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("employee")
+@RequestMapping("/employee")
 public class EmployeeController {
 
     @Autowired
@@ -46,9 +48,19 @@ public class EmployeeController {
     }
 
 
-    @DeleteMapping("{/id}")
+    @DeleteMapping("/{id}")
     public void deleteEmployee(@PathVariable int id){
         employeeService.deleteEmployee(id);
+
+    }
+
+
+
+
+   @GetMapping("/allemployeefordepartment/{id}")
+    public List<Employee> allEmployeeForDepartment(@PathVariable int id){
+
+        return employeeService.allEmployeeForDepartment(id);
 
     }
 

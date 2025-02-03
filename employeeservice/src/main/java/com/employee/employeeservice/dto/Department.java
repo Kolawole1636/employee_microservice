@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 public class Department {
 
+    private int id;
     private String name;
     private String hod;
     private int numberOfStaff;
@@ -16,12 +17,21 @@ public class Department {
     public Department() {
     }
 
-    public Department(String name, String hod, int numberOfStaff) {
+    public Department(int id,String name, String hod, int numberOfStaff) {
+        this.id=id;
         this.name = name;
         this.hod = hod;
         this.numberOfStaff = numberOfStaff;
     }
 
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

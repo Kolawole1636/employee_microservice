@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class EmployeeService {
 
@@ -119,6 +122,21 @@ public class EmployeeService {
     }
 
 
+    public List<Employee> allEmployeeForDepartment(int id) {
+        List<Employee> employees = employeeRepository.findAll();
 
+        List<Employee> employees_in_department = new ArrayList<>();
 
+//        String url = "http://department-service/department/" + id;
+//        Department department= restTemplate.getForObject(url, Department.class);
+
+        for(Employee emp: employees){
+            if(emp.getDepartmentId()==id){
+                employees_in_department.add(emp);
+            }
+        }
+
+        return employees_in_department;
+
+    }
 }
